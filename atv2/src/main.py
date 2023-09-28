@@ -1,22 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
 
-# parei no minuto 45:40
+url = "https://steamcrackedgames.com/games/cracked"
 
-# 1 Kabum - consoles
-# https://www.kabum.com.br/gamer?page_number=1&page_size=20&facet_filters=&sort=most_searched
-
-response = requests.get("https://www.kayak.com.br/explore/FEC-anywhere")
+response = requests.get(url)
 text = BeautifulSoup(response.text, "html.parser")
 
-name = text.findAll("div", {"class": "City__Name"})
+td_cells = text.find_all("td")
 
-
-print(name)
-
-
-# 2 Google Flights
-#  https://www.google.com/travel/explore?tfs=CBwQAxoPag0IAxIJL20vMDl3d2xqGg9yDQgDEgkvbS8wOXd3bGpAAUgBcAKCAQsI____________AZgBAbIBBBgBIAE&tfu=GgAqAggD
-
-
-# 3
+for td in td_cells:
+    a_tag = td.find("a", class_=["text-white", "text-secondary"])
+    if a_tag:
+        # Extrai os títulos
+        if "text-white" in a_tag["class"]:
+            titulo = a_tag.text.strip()
+            # print("Título:", titulo)
+        # Extrai os datas
+        elif "text-secondary" in a_tag["class"]:
+            data = a_tag.text.strip()
+            # print("Data:", data)
