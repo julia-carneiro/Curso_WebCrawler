@@ -14,30 +14,33 @@ class Crawler:
         raw_datasus = self.request_data(
             "https://datasus.saude.gov.br/categoria/noticias/"
         )
-        news = raw_datasus.find_all("ul", {"id": "posts-list"})
-        # print(news)
+        ul_element = raw_datasus.find("ul", {"id": "posts-list"})
+        news = ul_element.find_all("li", {"class": "post"})
+
+        all_data = []
         if news is None:
             if not retry:
                 # time.sleep(3)
                 self.extract_from_datasus(retry=True)
         else:
             for _news in news:
-                image = _news.find("img", {"class": "img-fluid"})
                 titulo = _news.find("h2")
                 resumo = _news.find("p")
-                data_publicacao = (
-                    _news.find("span", class_="details").text.strip().split(",")[0]
-                )
+                raw_data_publicacao = _news.find("span", class_="details")
+                data_publicacao = raw_data_publicacao.text.strip().split(",")[0]
                 link = _news.find("h2").find("a")
-            data = {
-                "image": image.attrs["src"],
-                "titulo": titulo.text,
-                "resumo": resumo.text,
-                "data_publicacao": data_publicacao,
-                "link": link.attrs["href"],
-            }
-            print(data)
+
+                data = {
+                    "titulo": titulo.text,
+                    "resumo": resumo.text,
+                    "data_publicacao": data_publicacao,
+                    "link": link.attrs["href"],
+                }
+                all_data.append(data)
+            print(all_data)
+
         # print(news)
+        # print(all_data)
 
 
 if __name__ == "__main__":
