@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-import time
+import time  # utilizado para retry da requisição
+import textwrap  # besteira, apenas pra mostrar os textos inteiros, evitando que saiam da tela do console.
 
 
 class Crawler:
@@ -23,10 +24,18 @@ class Crawler:
         :param data: Um dicionário contendo as informações a serem impressas.
         """
         print("\n***", site, "***\n")
-        print("Título:", data["titulo"])
-        print("Resumo:", data["resumo"])
-        print("Data de publicação:", data["data_publicacao"])
-        print("Link:", data["link"])
+        print("Título:")
+        print(
+            textwrap.fill(data["titulo"], width=100)
+        )  # Ajuste a largura conforme necessário
+        print("\nResumo:")
+        print(
+            textwrap.fill(data["resumo"], width=100)
+        )  # Ajuste a largura conforme necessário
+        print("\nData de publicação:", data["data_publicacao"])
+        print(
+            "\nLink:", data["link"]
+        )  # Link não precisa aparecer de forma legível no console
         print("---------------------")
 
     def extract_from_datasus(self, retry: bool = False) -> None:
@@ -70,8 +79,8 @@ class Crawler:
                 }
                 # Salva todas as informações em uma lista
                 all_data.append(data)
-            # Printa APENAS UMA DAS NOTÍCIAS PARA TESTE
-            self.imprime_infos("DATASUS", data)
+        # Printa APENAS UMA DAS NOTÍCIAS PARA TESTE
+        self.imprime_infos("DATASUS", data)
 
     def extract_from_globo(self, retry: bool = False) -> None:
         """
@@ -104,7 +113,7 @@ class Crawler:
                     "link": link.attrs["href"],
                 }
                 all_data.append(data)
-            self.imprime_infos("GLOBO - TUDO SOBRE SUS", data)
+        self.imprime_infos("GLOBO - TUDO SOBRE SUS", data)
 
 
 if __name__ == "__main__":
