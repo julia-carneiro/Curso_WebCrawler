@@ -37,10 +37,7 @@ class Crawler:
                     "link": link.attrs["href"],
                 }
                 all_data.append(data)
-            print(all_data)
-
-        # print(news)
-        # print(all_data)
+            # print(all_data)
 
 
 if __name__ == "__main__":
