@@ -2,18 +2,27 @@ import requests
 from bs4 import BeautifulSoup
 import time  # utilizado para retry da requisição
 import textwrap  # besteira, apenas pra mostrar os textos inteiros, evitando que saiam da tela do console.
+import schedule
+from datetime import datetime
 
 
 class Crawler:
-    def request_data(self, url: str):
+    def request_data(self, url: str, retry: bool = False):
         """
         Faz uma requisição HTTP GET para a URL especificada e retorna o conteúdo em formato BeautifulSoup.
 
         :param url: A URL a ser requisitada.
         :return: O conteúdo da página web em formato BeautifulSoup.
         """
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
+        try:
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
+        except Exception as e:
+            if not retry:
+                time.sleep(3)
+                return self.request_data(url, True)
+            else:
+                raise e
         return soup
 
     def imprime_infos(self, site: str, data: dict):
@@ -122,3 +131,12 @@ if __name__ == "__main__":
     crawler.extract_from_datasus()
     # Extrai informações do site GLOBO - TUDO SOBRE SUS
     crawler.extract_from_globo()
+
+    def job():
+        print("\nExecute job. Time {}".format(str(datetime.now())))
+        crawler.extract_from_datasus()
+        crawler.extract_from_globo()
+
+    schedule.every(1).minutes.do(job)
+    while True:
+        schedule.run_pending()
