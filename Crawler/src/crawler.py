@@ -4,9 +4,16 @@ import time  # utilizado para retry da requisição
 import textwrap  # besteira, apenas pra mostrar os textos inteiros, evitando que saiam da tela do console.
 import schedule
 from datetime import datetime
+from database import DataBase
+from dotenv import load_dotenv
+import os
 
 
 class Crawler:
+    def __init__(self):
+        load_dotenv()
+        self.db = DataBase()
+
     def request_data(self, url: str, retry: bool = False):
         """
         Faz uma requisição HTTP GET para a URL especificada e retorna o conteúdo em formato BeautifulSoup.
@@ -47,15 +54,16 @@ class Crawler:
         )  # Link não precisa aparecer de forma legível no console
         print("---------------------")
 
-    def extract_from_datasus(self, retry: bool = False) -> None:
+    def extract_from_datasus(self, retry: bool = False, page: int = 1) -> None:
         """
         Extrai informações do site DATASUS.
 
         :param retry: Indica se a função deve tentar novamente em caso de falha na extração.
         """
         raw_datasus = self.request_data(
-            "https://datasus.saude.gov.br/categoria/noticias/"
+            "https://datasus.saude.gov.br/categoria/noticias/page/{}/".format(page)
         )
+
         # Pega lista
         ul_element = raw_datasus.find("ul", {"id": "posts-list"})
         # Encontra todas as notícias dentro da lista completa
@@ -88,8 +96,13 @@ class Crawler:
                 }
                 # Salva todas as informações em uma lista
                 all_data.append(data)
-        # Printa APENAS UMA DAS NOTÍCIAS PARA TESTE
-        self.imprime_infos("DATASUS", data)
+                response = self.db.insert_db(data)
+                # Printa
+                if response:
+                    self.imprime_infos(response)
+                else:
+                    print("Os dados já existem no banco de dados.")
+                # self.imprime_infos("DATASUS", data)
 
     def extract_from_globo(self, retry: bool = False) -> None:
         """
@@ -121,21 +134,30 @@ class Crawler:
                     "data_publicacao": data_publicacao,
                     "link": link.attrs["href"],
                 }
+
                 all_data.append(data)
-        self.imprime_infos("GLOBO - TUDO SOBRE SUS", data)
+                # resposta do banco de dados
+                response = self.db.insert_db(data)
+                # Printa
+                if response:  # Caso seja uma notícia não cadastrada no banco
+                    self.imprime_infos(response)
+                else:
+                    print("Os dados já existem no banco de dados.")
+
+    def execute(self, num_pages: int = 1):
+        for page in range(1, num_pages):
+            self.extract_from_datasus(page)
+        self.extract_from_globo(page)
+        exit()
 
 
 if __name__ == "__main__":
     crawler = Crawler()
-    # Extrai informações do site DATASUS
-    crawler.extract_from_datasus()
-    # Extrai informações do site GLOBO - TUDO SOBRE SUS
-    crawler.extract_from_globo()
+    crawler.execute(2)
 
     def job():
         print("\nExecute job. Time {}".format(str(datetime.now())))
-        crawler.extract_from_datasus()
-        crawler.extract_from_globo()
+        crawler.execute()
 
     schedule.every(1).minutes.do(job)
     while True:
