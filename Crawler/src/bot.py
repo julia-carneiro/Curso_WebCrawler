@@ -1,6 +1,7 @@
 import tweepy
 from dotenv import load_dotenv
 import os
+from crawler import DEBUG
 
 
 class BOT:
@@ -46,5 +47,6 @@ class BOT:
             return True
 
         except Exception as e:
-            print(str(e))
+            if DEBUG:
+                print(str(e))
             return False
