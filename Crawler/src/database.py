@@ -11,17 +11,17 @@ class DataBase:
     def connect_db(self):
         client = MongoClient(os.getenv("DB_URI"))
         db = client["CursoCrawler"]
+
         return db.noticias
 
-    def insert_db(self, data: dict):
+    def insert_db(self, data: dict) -> dict | None:
         query = {"titulo": data["titulo"]}
         result = self.noticias.find_one(query)
         if result is None:
             self.noticias.insert_one(data)
-            print("Inserido com sucesso")
-            return data
+            copy_data = data.copy()
+            return copy_data  # retorna cópia do dicionario
         else:
-            print("Os dados já existem no banco de dados.")
             return None
 
     def find_data(self, query: dict):
@@ -35,7 +35,10 @@ class DataBase:
 
 if __name__ == "__main__":
     db = DataBase()
-    data = {
+    # DEBUG
+    """
+    
+    # data = {
         "titulo": "Sol Nascente: moradores da maior favela do país demoram 1h30 para chegar ao hospital mais próximo",
         "resumo": "Região com 32.081 domicílios conta com apenas uma UBS. Mães da 'Fazendinha' enfrentam caminhada de 30 minutos e cerca de uma hora entre espera pelo ônibus e chegada ao Hospital Regional de Ceilândia, no Distrito Federal.",
         "data_publicacao": "Há 2 dias",
@@ -56,4 +59,4 @@ if __name__ == "__main__":
     query = {
         "titulo": "Sol Nascente: moradores da maior favela do país demoram 1h30 para chegar ao hospital mais próximo"
     }
-    db.find_data(query)
+    db.find_data(query)"""

@@ -7,12 +7,16 @@ from datetime import datetime
 from database import DataBase
 from dotenv import load_dotenv
 import os
+from bot import BOT
+
+DEBUG = False
 
 
 class Crawler:
     def __init__(self):
         load_dotenv()
         self.db = DataBase()
+        self.bot = BOT()
 
     def request_data(self, url: str, retry: bool = False):
         """
@@ -53,6 +57,16 @@ class Crawler:
             "\nLink:", data["link"]
         )  # Link não precisa aparecer de forma legível no console
         print("---------------------")
+
+    def post_twitter(self, data: dict):
+        response = self.db.insert_db(data)
+        if response is not None:
+            self.bot.post(response)
+            if DEBUG:
+                print(response)
+                self.imprime_infos(response)
+        elif response == None and DEBUG:
+            print("Erro")
 
     def extract_from_datasus(self, retry: bool = False, page: int = 1) -> None:
         """
@@ -96,13 +110,9 @@ class Crawler:
                 }
                 # Salva todas as informações em uma lista
                 all_data.append(data)
-                response = self.db.insert_db(data)
-                # Printa
-                if response:
-                    self.imprime_infos(response)
-                else:
-                    print("Os dados já existem no banco de dados.")
-                # self.imprime_infos("DATASUS", data)
+
+                # Insere DB e posta
+                self.post_twitter(data)
 
     def extract_from_globo(self, retry: bool = False) -> None:
         """
@@ -136,13 +146,8 @@ class Crawler:
                 }
 
                 all_data.append(data)
-                # resposta do banco de dados
-                response = self.db.insert_db(data)
-                # Printa
-                if response:  # Caso seja uma notícia não cadastrada no banco
-                    self.imprime_infos(response)
-                else:
-                    print("Os dados já existem no banco de dados.")
+
+                self.post_twitter(data)
 
     def execute(self, num_pages: int = 1):
         for page in range(1, num_pages):
@@ -156,7 +161,8 @@ if __name__ == "__main__":
     crawler.execute(2)
 
     def job():
-        print("\nExecute job. Time {}".format(str(datetime.now())))
+        if DEBUG:
+            print("\nExecute job. Time {}".format(str(datetime.now())))
         crawler.execute()
 
     schedule.every(1).minutes.do(job)
