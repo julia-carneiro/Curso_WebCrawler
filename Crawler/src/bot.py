@@ -1,7 +1,6 @@
 import tweepy
 from dotenv import load_dotenv
 import os
-from crawler import DEBUG
 
 
 class BOT:
@@ -32,21 +31,34 @@ class BOT:
 
     def post(self, data: dict):
         try:
-            # Havia feito um calculo para redução do tamanho do resumo caso excedesse 280 caracteres porém não ficou muito interessante,
+            """Havia feito um calculo para redução do tamanho do resumo caso excedesse 280 caracteres porém não ficou muito interessante,
             # muitas vezes o resumo ficava muito pequeno e sem sentido,
-            # por isso decidi deixar apenas o título
+            # por isso decidi deixar apenas o título"""
 
             # Cria texto do tweet
-            tweet_text = "{}\n\nData: {}\n\nLink: {}".format(
+            post = "{}\n\nData: {}\n\nLink: {}".format(
                 data["titulo"],
                 data["data_publicacao"],
                 data["link"],
             )
 
-            self.client.create_tweet(text=tweet_text)
+            # Para imagens - import gdown:
+            """image_link = data["image"]
+
+            media = None
+            if image_link != "":
+                path = "/tmp/{}.jpg".format(str(data["date"]))
+                gdown.download(image_link, path)
+                media = self.api.media_upload(filename=path)
+
+            if media is not None:
+                self.client.create_tweet(text=post, media_ids=[media.media_id])
+            else:
+                self.client.create_tweet(text=post)"""
+
+            self.client.create_tweet(text=post)
             return True
 
         except Exception as e:
-            if DEBUG:
-                print(str(e))
+            print(str(e))
             return False

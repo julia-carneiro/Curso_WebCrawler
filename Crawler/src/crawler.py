@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 import os
 from bot import BOT
 
-DEBUG = False
-
 
 class Crawler:
     def __init__(self):
@@ -36,37 +34,10 @@ class Crawler:
                 raise e
         return soup
 
-    def imprime_infos(self, site: str, data: dict):
-        """
-        Imprime as informações formatadas de um site específico.
-
-        :param site: O nome do site.
-        :param data: Um dicionário contendo as informações a serem impressas.
-        """
-        print("\n***", site, "***\n")
-        print("Título:")
-        print(
-            textwrap.fill(data["titulo"], width=100)
-        )  # Ajuste a largura conforme necessário
-        print("\nResumo:")
-        print(
-            textwrap.fill(data["resumo"], width=100)
-        )  # Ajuste a largura conforme necessário
-        print("\nData de publicação:", data["data_publicacao"])
-        print(
-            "\nLink:", data["link"]
-        )  # Link não precisa aparecer de forma legível no console
-        print("---------------------")
-
     def post_twitter(self, data: dict):
         response = self.db.insert_db(data)
         if response is not None:
             self.bot.post(response)
-            if DEBUG:
-                print(response)
-                self.imprime_infos(response)
-        elif response == None and DEBUG:
-            print("Erro")
 
     def extract_from_datasus(self, retry: bool = False, page: int = 1) -> None:
         """
@@ -161,8 +132,7 @@ if __name__ == "__main__":
     crawler.execute(2)
 
     def job():
-        if DEBUG:
-            print("\nExecute job. Time {}".format(str(datetime.now())))
+        print("\nExecute job. Time {}".format(str(datetime.now())))
         crawler.execute()
 
     schedule.every(1).minutes.do(job)
